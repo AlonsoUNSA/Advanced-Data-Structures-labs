@@ -11,12 +11,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # Agrega los archivos fuente y de encabezado
 set(SOURCES
     main.cpp
-    # BTree.cpp
+    Btree.cpp
     Key.cpp
 )
 
 set(HEADERS
-  # BTree.h
+    Btree.h
     Key.h
     BNode.h
 )

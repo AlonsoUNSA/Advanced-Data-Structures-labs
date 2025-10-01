@@ -9,6 +9,9 @@ private:
   const int max_keys;
   const int min_keys;
 
+  void splitNode(BNode *node);
+  void insertOnLeaf(BNode *node, Key k);
+
 public:
   Btree(int max_keys_value);
   BNode *search(BNode *root, Key k);

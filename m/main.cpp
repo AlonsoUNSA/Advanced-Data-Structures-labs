@@ -1,24 +1,10 @@
 #include "BNode.h"
-#include "Key.h"
+#include "Btree.h"
 #include <bits/stdc++.h>
 #include <iostream>
 
 using namespace std;
 
-Key parseKey(const string &input) {
-  if (input.empty())
-    return Key(0);
-
-  // Verificar si es número
-  istringstream iss(input);
-  int num;
-  if (iss >> num && iss.eof()) {
-    return Key(num);
-  }
-
-  // Si no es número, tomar el primer carácter
-  return Key(input[0]);
-}
 int main(int argc, char *argv[]) {
   BNode bnode(true);
   std::cout << "cero:\n";
@@ -40,6 +26,21 @@ int main(int argc, char *argv[]) {
 
   std::cout << "tres:\n";
   bnode.print();
+
+  std::cout << "el nro 100: " << bnode.exists(parseKey("100"));
+
+  std::cout << "\n\n\n\nnext:\n\n";
+
+  Btree *b = new Btree(4);
+
+  b->insert(parseKey("a"));
+  // BNode *node = new BNode(true, nullptr);
+  b->insert(parseKey("b"));
+  b->insert(parseKey("d"));
+  b->insert(parseKey("e"));
+  b->insert(parseKey("f"));
+
+  b->print();
 
   return 0;
 }

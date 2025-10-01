@@ -50,4 +50,19 @@ struct BNode {
   }
 };
 
+inline Key parseKey(const std::string &input) {
+  if (input.empty())
+    return Key(0);
+
+  // Verificar si es número
+  std::istringstream iss(input);
+  int num;
+  if (iss >> num && iss.eof()) {
+    return Key(num);
+  }
+
+  // Si no es número, tomar el primer carácter
+  return Key(input[0]);
+}
+
 #endif
