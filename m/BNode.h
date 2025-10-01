@@ -46,7 +46,7 @@ struct BNode {
     for (int i = 0; i < key.size() - 1; i++) {
       std::cout << key[i] << "|";
     }
-    std::cout << key[key.size() - 1] << "]" << std::endl;
+    std::cout << key[key.size() - 1] << "]";
   }
 };
 

@@ -11,7 +11,6 @@ void Btree::insertOnLeaf(BNode *node, Key k) { node->insert(k); }
 
 void Btree::splitNode(BNode *node) {
   // [node|mid|newNode]
-  std::cout << "splitting node";
 
   // encontrar la llave del medio
   int midIndex = node->key.size() / 2;
@@ -19,6 +18,7 @@ void Btree::splitNode(BNode *node) {
 
   // nuevo nodo (derecha)
   BNode *newNode = new BNode(node->isLeaf, node->parent);
+  newNode->key.resize(node->key.size() - midIndex - 1);
   std::copy(node->key.begin() + midIndex + 1, node->key.end(),
             newNode->key.begin());
 

@@ -31,14 +31,25 @@ int main(int argc, char *argv[]) {
 
   std::cout << "\n\n\n\nnext:\n\n";
 
-  Btree *b = new Btree(4);
+  Btree *b = new Btree(3);
 
-  b->insert(parseKey("a"));
-  // BNode *node = new BNode(true, nullptr);
-  b->insert(parseKey("b"));
-  b->insert(parseKey("d"));
-  b->insert(parseKey("e"));
-  b->insert(parseKey("f"));
+  b->insert(parseKey("4"));
+  b->insert(parseKey("28"));
+  b->insert(parseKey("22"));
+  b->insert(parseKey("19"));
+  b->insert(parseKey("2"));
+  b->insert(parseKey("20"));
+  b->insert(parseKey("9"));
+  b->insert(parseKey("23"));
+  b->insert(parseKey("29"));
+  b->insert(parseKey("25"));
+  b->insert(parseKey("30"));
+  b->insert(parseKey("3"));
+  b->insert(parseKey("31"));
+  b->insert(parseKey("16"));
+  b->insert(parseKey("100"));
+  b->insert(parseKey("7"));
+  b->insert(parseKey("1"));
 
   b->print();
 
