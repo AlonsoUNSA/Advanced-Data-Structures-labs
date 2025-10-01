@@ -53,5 +53,19 @@ int main(int argc, char *argv[]) {
 
   b->print();
 
+  std::cout << "\nnext: \n\n";
+  b->remove(parseKey("20"));
+  b->print();
+
+  std::cout << "\nnext: \n\n";
+  b->remove(parseKey("28"));
+  b->print();
+
+  std::cout << "\nnext: \n\n";
+  b->remove(parseKey("22"));
+  b->print();
+
+  std::cout << "\nnext: \n\n";
+
   return 0;
 }

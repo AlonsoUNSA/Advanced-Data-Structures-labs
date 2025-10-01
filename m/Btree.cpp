@@ -55,21 +55,22 @@ void Btree::splitNode(BNode *node) {
   }
 }
 
-BNode *Btree::search(BNode *root_, Key k) {
+std::pair<BNode*, int> Btree::search(BNode *root_, Key k) {
 
   // tamaño cero
   if (root_->key.size() == 0) {
-    return nullptr;
+    return {nullptr, -1};
   }
 
   // si está en el nodo actual
   auto pos = std::find(root_->key.begin(), root_->key.end(), k);
   if (pos != root_->key.end()) {
-    return root_;
+    int idx = pos - root_->key.begin();
+    return {root_, idx};
 
     // si no está en el nodo actual
   } else if (root_->isLeaf) {
-    return nullptr;
+    return {nullptr, -1};
   } else {
     auto pos = std::upper_bound(root_->key.begin(), root_->key.end(), k);
     int i_child = pos - root_->key.begin();
@@ -129,10 +130,145 @@ void Btree::print() {
   }
 }
 
-/*
-  Btree(int max_keys_value);
-  BNode *search(Key k);
-  void insert(Key k);
-  void remove(Key k);
-  void print();
-  */
+// Métodos auxiliares para remove
+
+int Btree::indexInParent(BNode* node) {
+    if (!node->parent) return -1;
+    for (int i = 0; i < node->parent->child.size(); ++i) {
+        if (node->parent->child[i] == node) return i;
+    }
+    return -1;
+}
+
+BNode* Btree::predecessorLeaf(BNode* node, int idx) {
+    BNode* cur = node->child[idx];
+    while (!cur->isLeaf) {
+        cur = cur->child.back();
+    }
+    return cur;
+}
+
+bool Btree::borrowFromLeft(BNode* node, int posInParent) {
+    BNode* parent = node->parent;
+    BNode* left = parent->child[posInParent - 1];
+    if ((int)left->key.size() > min_keys) {
+        // Mover clave del padre al nodo
+        node->key.insert(node->key.begin(), parent->key[posInParent - 1]);
+        // Mover clave del hermano izquierdo al padre
+        parent->key[posInParent - 1] = left->key.back();
+        left->key.pop_back();
+        if (!left->isLeaf) {
+            BNode* moved = left->child.back();
+            left->child.pop_back();
+            node->child.insert(node->child.begin(), moved);
+            moved->parent = node;
+        }
+        return true;
+    }
+    return false;
+}
+
+bool Btree::borrowFromRight(BNode* node, int posInParent) {
+    BNode* parent = node->parent;
+    BNode* right = parent->child[posInParent + 1];
+    if ((int)right->key.size() > min_keys) {
+        node->key.push_back(parent->key[posInParent]);
+        parent->key[posInParent] = right->key.front();
+        right->key.erase(right->key.begin());
+        if (!right->isLeaf) {
+            BNode* moved = right->child.front();
+            right->child.erase(right->child.begin());
+            node->child.push_back(moved);
+            moved->parent = node;
+        }
+        return true;
+    }
+    return false;
+}
+
+void Btree::mergeWithLeft(BNode* node, int posInParent) {
+    BNode* parent = node->parent;
+    BNode* left = parent->child[posInParent - 1];
+    left->key.push_back(parent->key[posInParent - 1]);
+    for (auto& k : node->key) left->key.push_back(k);
+    if (!node->isLeaf) {
+        for (auto c : node->child) {
+            left->child.push_back(c);
+            c->parent = left;
+        }
+    }
+    parent->key.erase(parent->key.begin() + (posInParent - 1));
+    parent->child.erase(parent->child.begin() + posInParent);
+    node->child.clear();
+    delete node;
+    fixUnderflow(parent);
+}
+
+void Btree::mergeWithRight(BNode* node, int posInParent) {
+    BNode* parent = node->parent;
+    BNode* right = parent->child[posInParent + 1];
+    node->key.push_back(parent->key[posInParent]);
+    for (auto& k : right->key) node->key.push_back(k);
+    if (!right->isLeaf) {
+        for (auto c : right->child) {
+            node->child.push_back(c);
+            c->parent = node;
+        }
+    }
+    parent->key.erase(parent->key.begin() + posInParent);
+    parent->child.erase(parent->child.begin() + (posInParent + 1));
+    right->child.clear();
+    delete right;
+    fixUnderflow(parent);
+}
+
+void Btree::fixUnderflow(BNode* node) {
+    if (node == root) {
+        if (node->key.empty() && !node->isLeaf) {
+            BNode* tmp = root;
+            root = root->child[0];
+            root->parent = nullptr;
+            tmp->child.clear();
+            delete tmp;
+        }
+        return;
+    }
+    if ((int)node->key.size() >= min_keys) return;
+    BNode* parent = node->parent;
+    int pos = indexInParent(node);
+    if (pos - 1 >= 0) {
+        if (borrowFromLeft(node, pos)) return;
+    }
+    if (pos + 1 < (int)parent->child.size()) {
+        if (borrowFromRight(node, pos)) return;
+    }
+    if (pos - 1 >= 0) {
+        mergeWithLeft(node, pos);
+    } else {
+        mergeWithRight(node, pos);
+    }
+}
+
+void Btree::remove(Key k) {
+    if (!root) {
+        std::cout << "El árbol está vacío\n";
+        return;
+    }
+    auto p = search(root, k);
+    if (!p.first) {
+        std::cout << "Clave no encontrada\n";
+        return;
+    }
+    BNode* node = p.first;
+    int idx = p.second;
+    if (node->isLeaf) {
+        node->key.erase(node->key.begin() + idx);
+        fixUnderflow(node);
+    } else {
+        BNode* predLeaf = predecessorLeaf(node, idx);
+        Key predKey = predLeaf->key.back();
+        node->key[idx] = predKey;
+        predLeaf->key.pop_back();
+        fixUnderflow(predLeaf);
+    }
+}
